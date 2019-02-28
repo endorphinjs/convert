@@ -33,7 +33,7 @@ export class AttributeNode extends Node {
 }
 
 export class ElementNode extends Node {
-    type: 'ElementTag';
+    type: 'ElementNode';
     constructor(public name: string, readonly open: boolean, readonly attributes: AttributeNode[] = [], public selfClosing: boolean = false) {
         super();
     }

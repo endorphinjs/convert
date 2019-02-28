@@ -13,7 +13,7 @@
   "scripts": {
     "test": "mocha",
     "build": "tsc",
-    "prepare": "npm run build"
+    "prepare": "npm test && npm run build"
   },
   "keywords": [],
   "author": "Sergey Chikuyonok <serge.che@gmail.com>",
