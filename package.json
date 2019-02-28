@@ -1,6 +1,6 @@
 {
   "name": "@endorphinjs/convert",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Convert template from Endorphin 1 to 2",
   "main": "./dist/index.js",
   "devDependencies": {
