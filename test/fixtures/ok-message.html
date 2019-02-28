@@ -39,13 +39,13 @@
     <e:variable minMessageWidth={70} />
 
     <e:if test={@has-actions && (selectMode || #active)}>
-        <ok-checkbox class="selectable_check" checked={message.selected} onClick="onToggleSelect">
+        <ok-checkbox class="selectable_check" checked={message.selected} on:click={onToggleSelect}>
             <e:add-class e:if={@firstOrSingleSeq || @seq.view === 'single' || (@firstAttachType == 'STICKER' && message.link.type != 'FORWARD')}>__shift</e:add-class>
             <e:add-class e:if={proMode && @show-avatar && @firstOrSingleSeq}>__1st</e:add-class>
         </ok-checkbox>
     </e:if>
 
-    <ok-message-container>
+    <ok-message-container on:click={onComponentClick}>
         <e:attribute min-content-width="">{#minContentWidth }</e:attribute>
         <e:attribute position="">right</e:attribute>
         <e:add-class e:if={@seq}>__seq-item-{ @seq.item } __seq-view-{ @seq.view }</e:add-class>

@@ -58,7 +58,7 @@
         </ok-checkbox>
     </t-if>
 
-    <ok-message-container>
+    <ok-message-container on-click="onComponentClick">
         <t-attribute name="min-content-width" if="!@pinned">{{state('min-content-width') }}</t-attribute>
         <t-attribute name="position" if="@is-mine && !@pro-mode">right</t-attribute>
         <t-add-class if="$seq">__seq-item-{{ $seq.item }} __seq-view-{{ $seq.view }}</t-add-class>

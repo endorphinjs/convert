@@ -85,7 +85,7 @@ function rewriteTag(node: ElementNode): ElementNode {
         if (isComponent) {
             node.attributes.forEach(attr => {
                 // Camel-case all props
-                if (!/^data-/.test(attr.name)) {
+                if (!/^(data|on)-/.test(attr.name)) {
                     attr.name = camelCase(attr.name);
                 }
                 // prop="true" -> prop={true}
