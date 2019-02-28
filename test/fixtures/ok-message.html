@@ -15,28 +15,28 @@
 
 <template>
     <link rel="stylesheet" href="./ok-message.css" />
-    <e:variable seq={message.sequence}></e:variable>
-    <e:variable sender={message.sender}></e:variable>
-    <e:variable isForward={message.link.type == 'FORWARD'}></e:variable>
-    <e:variable firstAttach={message.attaches[0]}></e:variable>
-    <e:variable firstAttachType={@firstAttach._type || (@isForward && message.link.message.attaches[0]._type)}></e:variable>
-    <e:variable firstLinkAttach={message.link.message.link.message.attaches[0] || message.link.message.attaches[0]}></e:variable>
-    <e:variable show-avatar={proMode || (!pinned && !isMine && message.type == 'USER' && inChat)}></e:variable>
-    <e:variable firstOrSingleSeq={@seq.item == 'first' || @seq.item == 'single'}></e:variable>
-    <e:variable isChannelMessage={message.type == 'CHANNEL' || message.type == 'CHANNEL_ADMIN'}></e:variable>
-    <e:variable show-name={pinned || (proMode && @firstOrSingleSeq) || (message.type == 'USER' && inChat && !isMine && @firstOrSingleSeq) || (@isChannelMessage && (message.text || message.link.type == 'FORWARD'))}></e:variable>
-    <e:variable hasMedia={@firstAttachType === 'PHOTO' || @firstAttachType === 'VIDEO'}></e:variable>
-    <e:variable hasLocation={@firstAttachType === 'LOCATION'}></e:variable>
-    <e:variable has-video-attach={message.attaches[_type === 'VIDEO'] || (@isForward && message.link.message.attaches[_type === 'VIDEO'])}></e:variable>
-    <e:variable has-share-attach={@firstLinkAttach._type === 'SHARE' || @firstAttachType === 'SHARE'}></e:variable>
-    <e:variable has-not-media-attach={(@firstLinkAttach && @firstLinkAttach._type !== 'PHOTO' && @firstLinkAttach._type !== 'VIDEO' && @firstLinkAttach._type !== 'STICKER') || (@firstAttachType && @firstAttachType !== 'PHOTO' && @firstAttachType !== 'VIDEO' && @firstAttachType !== 'STICKER')}></e:variable>
-    <e:variable has-actions={count(message.actions) > 0 && !pinned}></e:variable>
-    <e:variable has-bg={@firstAttachType != 'STICKER' || message.link.type == 'REPLY' || message.status == 'REMOVED' || message.link.type == 'FORWARD'}></e:variable>
-    <e:variable keyboard={message.attaches[_type === 'INLINE_KEYBOARD'] || (@isForward && message.link.message.attaches[_type === 'INLINE_KEYBOARD'])}></e:variable>
+    <e:variable seq={message.sequence} />
+    <e:variable sender={message.sender} />
+    <e:variable isForward={message.link.type == 'FORWARD'} />
+    <e:variable firstAttach={message.attaches[0]} />
+    <e:variable firstAttachType={@firstAttach._type || (@isForward && message.link.message.attaches[0]._type)} />
+    <e:variable firstLinkAttach={message.link.message.link.message.attaches[0] || message.link.message.attaches[0]} />
+    <e:variable show-avatar={proMode || (!pinned && !isMine && message.type == 'USER' && inChat)} />
+    <e:variable firstOrSingleSeq={@seq.item == 'first' || @seq.item == 'single'} />
+    <e:variable isChannelMessage={message.type == 'CHANNEL' || message.type == 'CHANNEL_ADMIN'} />
+    <e:variable show-name={pinned || (proMode && @firstOrSingleSeq) || (message.type == 'USER' && inChat && !isMine && @firstOrSingleSeq) || (@isChannelMessage && (message.text || message.link.type == 'FORWARD'))} />
+    <e:variable hasMedia={@firstAttachType === 'PHOTO' || @firstAttachType === 'VIDEO'} />
+    <e:variable hasLocation={@firstAttachType === 'LOCATION'} />
+    <e:variable has-video-attach={message.attaches[_type === 'VIDEO'] || (@isForward && message.link.message.attaches[_type === 'VIDEO'])} />
+    <e:variable has-share-attach={@firstLinkAttach._type === 'SHARE' || @firstAttachType === 'SHARE'} />
+    <e:variable has-not-media-attach={(@firstLinkAttach && @firstLinkAttach._type !== 'PHOTO' && @firstLinkAttach._type !== 'VIDEO' && @firstLinkAttach._type !== 'STICKER') || (@firstAttachType && @firstAttachType !== 'PHOTO' && @firstAttachType !== 'VIDEO' && @firstAttachType !== 'STICKER')} />
+    <e:variable has-actions={count(message.actions) > 0 && !pinned} />
+    <e:variable has-bg={@firstAttachType != 'STICKER' || message.link.type == 'REPLY' || message.status == 'REMOVED' || message.link.type == 'FORWARD'} />
+    <e:variable keyboard={message.attaches[_type === 'INLINE_KEYBOARD'] || (@isForward && message.link.message.attaches[_type === 'INLINE_KEYBOARD'])} />
 
     <!-- Используем для расчёта необходимости рисовать блюр, это же значение указано в ok-message-media -->
-    <e:variable maxMessageWidth={380}></e:variable>
-    <e:variable minMessageWidth={70}></e:variable>
+    <e:variable maxMessageWidth={380} />
+    <e:variable minMessageWidth={70} />
 
     <e:if test={@has-actions && (selectMode || #active)}>
         <ok-checkbox class="selectable_check" checked={message.selected} onClick="onToggleSelect">
@@ -83,7 +83,7 @@
             </ok-user-card>
         </e:if>
         <e:if test={@show-name}>
-            <e:variable clickable={inChat && !isMine && !@sender.deleted && !@sender.current && (message.type == 'USER' || message.type == 'CHANNEL_ADMIN')}></e:variable>
+            <e:variable clickable={inChat && !isMine && !@sender.deleted && !@sender.current && (message.type == 'USER' || message.type == 'CHANNEL_ADMIN')} />
             <div slot="author" class="author" data-tsid="author_of_message_not_me">
                 <e:attribute on:click={}>onOpenDialog</e:attribute>
                 <e:add-class e:if={@clickable}>link</e:add-class>

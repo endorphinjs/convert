@@ -20,27 +20,34 @@ function rewriteElement(node: ElementNode): Node {
         ? rewriteControl(node)
         : rewriteTag(node);
 
-    const ifAttr = getAttr(node, 'if');
-    if (ifAttr) {
-        ifAttr.name = 'e:if';
-        ifAttr.value = toExpression(ifAttr.value);
-    }
-
-    node.attributes.forEach(attr => {
-        if (/^on-/.test(attr.name)) {
-            // Rewrite event handler
-            attr.name = 'on:' + attr.name.slice(3);
-            attr.value = toExpression(attr.value);
+    if (node) {
+        const ifAttr = getAttr(node, 'if');
+        if (ifAttr) {
+            ifAttr.name = 'e:if';
+            ifAttr.value = toExpression(ifAttr.value);
         }
 
-        attr.value = rewriteAttributeValue(attr.value);
-    });
+        node.attributes.forEach(attr => {
+            if (/^on-/.test(attr.name)) {
+                // Rewrite event handler
+                attr.name = 'on:' + attr.name.slice(3);
+                attr.value = toExpression(attr.value);
+            }
+
+            attr.value = rewriteAttributeValue(attr.value);
+        });
+    }
 
     return node;
 }
 
 function rewriteControl(node: ElementNode): ElementNode {
     node.name = node.name.replace(/^t-/, 'e:');
+
+    if (node.name === 'e:variable' && !node.open) {
+        return null;
+    }
+
     if (node.open) {
         if (node.name === 'e:if' || node.name === 'e:when') {
             const test = getAttr(node, 'test');
@@ -55,6 +62,7 @@ function rewriteControl(node: ElementNode): ElementNode {
         } else if (node.name === 'e:variable') {
             const name = getAttr(node, 'name');
             const select = getAttr(node, 'select');
+            node.selfClosing = true;
             node.attributes.length = 0;
             node.attributes.push(new AttributeNode(
                 name.value as string,

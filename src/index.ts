@@ -27,6 +27,10 @@ export default function convert(template: string, url?: string, callback?: Conve
     parseXml(template, url, token => {
         token = rewrite(token);
 
+        if (!token) {
+            return;
+        }
+
         if (callback) {
             token = callback(token);
         }
