@@ -1,0 +1,265 @@
+<link rel="import" href="../ok-message-container/ok-message-container.html" />
+
+<link rel="import" href="../ok-user-card/ok-user-card.html">
+<link rel="import" href="../ok-message-controls/ok-message-controls.html" />
+<link rel="import" href="../ok-message-stats/ok-message-stats.html"/>
+<link rel="import" href="../ok-message-keyboard/ok-message-keyboard.html"/>
+
+<link rel="import" href="../ok-name/ok-name.html"/>
+<link rel="import" href="../ok-icon/ok-icon.html"/>
+<link rel="import" href="../ok-time/ok-time.html"/>
+<link rel="import" href="../ok-l10n/ok-l10n.html"/>
+<link rel="import" href="./ok-message-content.html"/>
+
+<model>
+    <key name="message" type="json"></key>
+    <key name="chat-id" type="number"></key>
+    <key name="unread" type="boolean"></key>
+    <key name="is-mine" type="boolean"></key>
+    <key name="is-active" type="boolean"></key>
+    <key name="in-chat" type="boolean"></key>
+    <key name="is-chat-admin" type="boolean"></key>
+    <key name="select-mode" type="boolean"></key>
+    <key name="is-visible" type="boolean"></key>
+    <key name="pinned" type="boolean"></key>
+    <key name="pro-mode" type="boolean"></key>
+    <key name="allow-commands" type="boolean"></key>
+</model>
+
+<template>
+    <link rel="stylesheet" href="./ok-message.css" />
+    <t-variable name="seq" select="@message.sequence"></t-variable>
+    <t-variable name="sender" select="@message.sender"></t-variable>
+    <t-variable name="isForward" select="@message.link.type == 'FORWARD'"></t-variable>
+    <t-variable name="firstAttach" select="@message.attaches[0]"></t-variable>
+    <t-variable name="firstAttachType" select="$firstAttach._type || ($isForward && @message.link.message.attaches[0]._type)"></t-variable>
+    <t-variable name="firstLinkAttach" select="@message.link.message.link.message.attaches[0] || @message.link.message.attaches[0]"></t-variable>
+    <t-variable name="show-avatar" select="@pro-mode || (!@pinned && !@is-mine && @message.type == 'USER' && @in-chat)"></t-variable>
+    <t-variable name="firstOrSingleSeq" select="$seq.item == 'first' || $seq.item == 'single'"></t-variable>
+    <t-variable name="isChannelMessage" select="@message.type == 'CHANNEL' || @message.type == 'CHANNEL_ADMIN'"></t-variable>
+    <t-variable name="show-name" select="@pinned || (@pro-mode && $firstOrSingleSeq) || (@message.type == 'USER' && @in-chat && !@is-mine && $firstOrSingleSeq) || ($isChannelMessage && (@message.text || @message.link.type == 'FORWARD'))"></t-variable>
+    <t-variable name="hasMedia" select="$firstAttachType === 'PHOTO' || $firstAttachType === 'VIDEO'"></t-variable>
+    <t-variable name="hasLocation" select="$firstAttachType === 'LOCATION'"></t-variable>
+    <t-variable name="has-video-attach" select="@message.attaches[_type === 'VIDEO'] || ($isForward && @message.link.message.attaches[_type === 'VIDEO'])"></t-variable>
+    <t-variable name="has-share-attach" select="$firstLinkAttach._type === 'SHARE' || $firstAttachType === 'SHARE'"></t-variable>
+    <t-variable name="has-not-media-attach" select="($firstLinkAttach && $firstLinkAttach._type !== 'PHOTO' && $firstLinkAttach._type !== 'VIDEO' && $firstLinkAttach._type !== 'STICKER') || ($firstAttachType && $firstAttachType !== 'PHOTO' && $firstAttachType !== 'VIDEO' && $firstAttachType !== 'STICKER')"></t-variable>
+    <t-variable name="has-actions" select="count(@message.actions) > 0 && !@pinned"></t-variable>
+    <t-variable name="has-bg" select="$firstAttachType != 'STICKER' || @message.link.type == 'REPLY' || @message.status == 'REMOVED' || @message.link.type == 'FORWARD'"></t-variable>
+    <t-variable name="keyboard" select="@message.attaches[_type === 'INLINE_KEYBOARD'] || ($isForward && @message.link.message.attaches[_type === 'INLINE_KEYBOARD'])"></t-variable>
+
+    <!-- Используем для расчёта необходимости рисовать блюр, это же значение указано в ok-message-media -->
+    <t-variable name="maxMessageWidth" select="380"></t-variable>
+    <t-variable name="minMessageWidth" select="70"></t-variable>
+
+    <t-if test="$has-actions && (@select-mode || state('active'))">
+        <ok-checkbox class="selectable_check" checked="{@message.selected}" on-click="onToggleSelect">
+            <t-add-class if="$firstOrSingleSeq || $seq.view === 'single' || ($firstAttachType == 'STICKER' && @message.link.type != 'FORWARD')">__shift</t-add-class>
+            <t-add-class if="@pro-mode && $show-avatar && $firstOrSingleSeq">__1st</t-add-class>
+        </ok-checkbox>
+    </t-if>
+
+    <ok-message-container>
+        <t-attribute name="min-content-width" if="!@pinned">{{state('min-content-width') }}</t-attribute>
+        <t-attribute name="position" if="@is-mine && !@pro-mode">right</t-attribute>
+        <t-add-class if="$seq">__seq-item-{{ $seq.item }} __seq-view-{{ $seq.view }}</t-add-class>
+        <t-add-class if="$has-bg">__bg</t-add-class>
+        <t-add-class if="$show-avatar && !$firstOrSingleSeq">__shift</t-add-class>
+        <t-add-class if="@is-mine && !@message.id">__unsent</t-add-class>
+        <t-add-class if="@message.type == 'CHANNEL' || @message.type == 'CHANNEL_ADMIN'">__channel</t-add-class>
+        <t-add-class if="@message.error">__has-error</t-add-class>
+        <t-add-class if="@is-mine">__mine</t-add-class>
+        <t-add-class if="@message.preview">__preview</t-add-class>
+        <t-add-class if="$has-video-attach">__video-attach</t-add-class>
+        <t-add-class if="$has-not-media-attach && !$keyboard">__not-media-attach</t-add-class>
+        <t-add-class if="@pinned">__pinned</t-add-class>
+        <t-add-class if="@pro-mode">__pro-mode</t-add-class>
+        <t-add-class if="@pro-mode && $show-avatar && $firstOrSingleSeq">__1st</t-add-class>
+        <t-add-class if="$keyboard">__keyboard</t-add-class>
+
+        <t-if test="!@pro-mode">
+            <t-choose>
+                <t-when test="@message.error">
+                    <ok-icon icon="error" size="small" class="message-icon"></ok-icon>
+                </t-when>
+                <t-when test="!@message.id && !@message.preview">
+                    <ok-icon icon="wait" size="small" class="message-icon"></ok-icon>
+                </t-when>
+            </t-choose>
+        </t-if>
+
+        <t-if test="$show-avatar && $firstOrSingleSeq && !$isChannelMessage">
+            <ok-user-card size="small" user="{ $sender }" show-status="{ @in-chat }" masked="true" slot="user-pic">
+                <t-if test="@in-chat && !$sender.deleted && $sender.avatarUrl">
+                    <t-attribute name="on-click">onShowAvatar</t-attribute>
+                    <t-add-class>link</t-add-class>
+                </t-if>
+            </ok-user-card>
+        </t-if>
+        <t-if test="$show-name">
+            <t-variable name="clickable" select="@in-chat && !@is-mine && !$sender.deleted && !$sender.current && (@message.type == 'USER' || @message.type == 'CHANNEL_ADMIN')"></t-variable>
+            <div slot="author" class="author" data-tsid="author_of_message_not_me">
+                <t-attribute name="on-click" if="$clickable">onOpenDialog</t-attribute>
+                <t-add-class if="$clickable">link</t-add-class>
+                <t-add-class if="$firstAttachType == 'STICKER'">__sticker</t-add-class>
+                <t-add-class if="@in-chat">__color-{{state('color-index')}}</t-add-class>
+                <t-add-class if="@pro-mode && !@in-chat && @is-mine">__mine</t-add-class>
+                <ok-name official="{ @pinned && $sender.official }" size="small">
+                    <t-add-class if="$sender.deleted">__deleted</t-add-class>
+                    <t-choose>
+                        <t-when test="@is-mine"><ok-l10n key="you"></ok-l10n></t-when>
+                        <t-when test="$sender.deleted"><ok-l10n key="deleted-user"></ok-l10n></t-when>
+                        <t-otherwise>{{ $sender.name }}</t-otherwise>
+                    </t-choose>
+                </ok-name>
+            </div>
+        </t-if>
+
+        <ok-message-content
+            message="{@message}"
+            is-mine="{@is-mine}"
+            in-chat="{@in-chat}"
+            is-visible="{@is-visible}"
+            pinned="{@pinned}"
+            pro-mode="{@pro-mode}"
+            allow-commands="{@allow-commands}">
+                <t-add-class if="$seq">__seq-item-{{ $seq.item }} __seq-view-{{ $seq.view }}</t-add-class>
+                <t-add-class if="@is-mine">__mine</t-add-class>
+                <t-add-class if="$show-name">__after-name</t-add-class>
+                <t-add-class if="$show-name && $hasMedia && !@message.text && !$isForward & !@pro-mode">__indent</t-add-class>
+                <t-add-class if="$keyboard">__keyboard</t-add-class>
+        </ok-message-content>
+
+        <div slot="meta">
+            <t-add-class if="($hasLocation || $hasMedia) && !@pro-mode">__secondary</t-add-class>
+            <t-add-class if="@pro-mode && state('active')">__hidden</t-add-class>
+            <t-if test="@message.status === 'EDITED' && !$isChannelMessage">
+                <ok-icon icon="edit" size="small"></ok-icon>
+            </t-if>
+            <t-if test="@message.stats">
+                <ok-message-stats stats="{@message.stats}"></ok-message-stats>
+            </t-if>
+            <ok-time timestamp="{@message.time}" view-type="{$hasMedia && !@pro-mode ? 'secondary' : 'primary'}"></ok-time>
+            <t-if test="@pro-mode">
+                <t-choose>
+                    <t-when test="@message.error">
+                        <ok-icon icon="error" size="nano"></ok-icon>
+                    </t-when>
+                    <t-when test="!@message.id && !@message.preview">
+                        <ok-icon icon="wait" size="nano"></ok-icon>
+                    </t-when>
+                </t-choose>
+            </t-if>
+        </div>
+
+        <t-if test="$has-actions && !@select-mode && (state('active') || state('active-menu'))">
+            <ok-message-controls slot="controls" message="{@message}" pro-mode="{@pro-mode}">
+                <t-add-class if="$firstAttachType == 'STICKER' && @message.link.type !== 'REPLY' && !@pro-mode">__shift</t-add-class>
+                <t-add-class if="@in-chat && !@is-mine && !@pro-mode && $firstOrSingleSeq && !$has-bg">__more</t-add-class>
+            </ok-message-controls>
+        </t-if>
+
+        <t-if test="count(@message.attaches) && $keyboard">
+            <ok-message-keyboard slot="out-bubble" message-id="{@message.uid}" sender="{@message.sender}" keyboard="{$keyboard}"></ok-message-keyboard>
+        </t-if>
+    </ok-message-container>
+
+    {{ '\n' }}
+
+    <t-if test="@message.error">
+        <ok-l10n class="error-text" key="error-{@message.error.code}" data-tsid="error_in_message">
+            <t-attribute name="on-click" if="@message.error.code == 'error.phone.binding.required'">onShowBindPhone</t-attribute>
+        </ok-l10n>
+
+        {{ '\n' }}
+    </t-if>
+</template>
+
+<script src="ok-message.js"></script>
+
+<playground>
+    <script>
+        function loadJSON(url) {
+            return fetch(url).then(res => res.json());
+        }
+
+        function initMessage(msgUrl) {
+            loadJSON(msgUrl)
+                .then(data => {
+                    const component = document.querySelector(COMPONENT_NAME);
+                    component.setAttribute('message', data);
+                    component.setAttribute('unread', data.unread);
+                    component.setAttribute('is-mine', data.isOwn);
+                });
+        }
+
+        function toggleWasRead() {
+            const component = document.querySelector(COMPONENT_NAME);
+            component.setAttribute('unread', !component.getAttribute('unread'));
+        }
+
+        function toggleIsMine() {
+            const component = document.querySelector(COMPONENT_NAME);
+            component.setAttribute('is-mine', !component.getAttribute('is-mine'));
+        }
+
+        function toggleActive() {
+            const component = document.querySelector(COMPONENT_NAME);
+            component.setAttribute('is-active', !component.getAttribute('is-active'));
+        }
+
+        function toggleSequence() {
+            const component = document.querySelector(COMPONENT_NAME);
+            const message = Object.assign({}, component.getAttribute('message'));
+
+            switch (message.sequence.item) {
+                case 'single':
+                    message.sequence = {
+                        item: 'first',
+                        view: 'first'
+                    };
+                    break;
+                case 'first':
+                    message.sequence = {
+                        item: 'middle',
+                        view: 'middle'
+                    };
+                    break;
+                case 'middle':
+                    message.sequence = {
+                        item: 'last',
+                        view: 'last'
+                    };
+                    break;
+                case 'last':
+                    message.sequence = {
+                        item: 'single',
+                        view: 'single'
+                    };
+                    break;
+            }
+
+            component.setAttribute('message', message);
+        }
+
+        function toggleChatType() {
+            const component = document.querySelector(COMPONENT_NAME);
+            const message = Object.assign({}, component.getAttribute('message'));
+
+            message.chatType = message.chatType === 'DIALOG' ? 'CHAT' : 'DIALOG';
+            component.setAttribute('message', message);
+        }
+
+        customElements.whenDefined(COMPONENT_NAME)
+            .then(() => initMessage('./json/sample-message.json'));
+
+    </script>
+    <playground:state playground:label="> sample" playground:onclick="initMessage('./json/sample-message.json')"></playground:state>
+    <playground:state playground:label="> with sticker" playground:onclick="initMessage('./json/sticker-message.json')"></playground:state>
+    <playground:state playground:label="> with img" playground:onclick="initMessage('./json/img-attach-message.json')"></playground:state>
+    <playground:state playground:label="> removed" playground:onclick="initMessage('./json/removed-message.json')"></playground:state>
+    <playground:state playground:label="1/0 'unread'" playground:onclick="toggleWasRead()"></playground:state>
+    <playground:state playground:label="1/0 'is-mine'" playground:onclick="toggleIsMine()"></playground:state>
+    <playground:state playground:label="1/0 'is-active'" playground:onclick="toggleActive()"></playground:state>
+    <playground:state playground:label="0/1/2/3 sequence" playground:onclick="toggleSequence()"></playground:state>
+    <playground:state playground:label="dialog/chat" playground:onclick="toggleChatType()"></playground:state>
+</playground>

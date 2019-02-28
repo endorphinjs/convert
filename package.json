@@ -1,0 +1,29 @@
+{
+  "name": "@endorphinjs/convert",
+  "version": "1.0.0",
+  "description": "Convert template from Endorphin 1 to 2",
+  "main": "./dist/index.js",
+  "devDependencies": {
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^11.9.5",
+    "mocha": "^6.0.2",
+    "ts-node": "^8.0.2",
+    "typescript": "^3.3.3333"
+  },
+  "scripts": {
+    "test": "mocha",
+    "build": "tsc",
+    "prepare": "npm run build"
+  },
+  "keywords": [],
+  "author": "Sergey Chikuyonok <serge.che@gmail.com>",
+  "license": "ISC",
+  "mocha": {
+    "spec": "test/*.ts",
+    "require": "ts-node/register"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {}
+}
