@@ -16,7 +16,7 @@ export class Node {
 }
 
 export class TextNode extends Node {
-    readonly type: 'TextNode';
+    type = 'TextNode';
     constructor(readonly value: string) {
         super();
     }
@@ -33,7 +33,7 @@ export class AttributeNode extends Node {
 }
 
 export class ElementNode extends Node {
-    type: 'ElementNode';
+    type = 'ElementNode';
     constructor(public name: string, readonly open: boolean, readonly attributes: AttributeNode[] = [], public selfClosing: boolean = false) {
         super();
     }
